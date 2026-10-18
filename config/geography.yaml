@@ -1,0 +1,138 @@
+# Europe only, Western Europe ranked first.  `names` = country names/adjectives
+# (weight 3), `places` = cities / universities / institutes (weight 1).
+# Postings whose text points to a non-European country are rejected;
+# postings with no location signal at all are KEPT (flagged "location unknown").
+
+europe:
+  Netherlands:
+    tier: west
+    names: ["netherlands", "the netherlands", "nederland", "holland", "dutch"]
+    places: ["amsterdam", "rotterdam", "utrecht", "leiden", "groningen", "maastricht", "tilburg", "nijmegen", "wageningen", "delft", "eindhoven", "twente", "enschede", "the hague", "den haag", "tinbergen", "erasmus university", "vu amsterdam", "cpb"]
+  Belgium:
+    tier: west
+    names: ["belgium", "belgie", "belgique", "belgian"]
+    places: ["leuven", "louvain", "ghent", "gent", "brussels", "bruxelles", "antwerp", "antwerpen", "namur", "hasselt", "liege", "ku leuven", "ucl ouvain", "ugent", "vub", "ulb"]
+  Germany:
+    tier: west
+    names: ["germany", "deutschland", "german"]
+    places: ["berlin", "munich", "munchen", "cologne", "koln", "bonn", "mannheim", "hamburg", "frankfurt", "konstanz", "kiel", "heidelberg", "dresden", "stuttgart", "leipzig", "jena", "freiburg", "goettingen", "gottingen", "paderborn", "passau", "regensburg", "luneburg", "lueneburg", "hohenheim", "duisburg", "essen", "munster", "tubingen", "mainz", "bayreuth", "bamberg", "hannover", "bremen", "halle", "magdeburg", "mpi", "max planck", "diw", "ifo", "zew", "rwi", "iab", "hwwi", "ifw"]
+  France:
+    tier: west
+    names: ["france", "french"]
+    places: ["paris", "toulouse", "lyon", "marseille", "aix-en-provence", "bordeaux", "grenoble", "lille", "nantes", "strasbourg", "montpellier", "palaiseau", "rennes", "nice", "dijon", "tse", "sciences po", "pse", "ensae", "hec paris", "insead", "crest"]
+  Switzerland:
+    tier: west
+    names: ["switzerland", "schweiz", "suisse", "svizzera", "swiss"]
+    places: ["zurich", "basel", "geneva", "geneve", "lausanne", "bern", "st. gallen", "st gallen", "lucerne", "luzern", "fribourg", "neuchatel", "lugano", "eth", "epfl", "unil", "unige"]
+  Austria:
+    tier: west
+    names: ["austria", "osterreich", "austrian"]
+    places: ["vienna", "wien", "graz", "innsbruck", "linz", "salzburg", "klagenfurt", "wu vienna", "ihs", "wifo"]
+  Luxembourg:
+    tier: west
+    names: ["luxembourg", "luxemburg"]
+    places: ["esch-sur-alzette", "belval", "liser", "snt"]
+  Ireland:
+    tier: west
+    names: ["ireland", "irish"]
+    places: ["dublin", "cork", "galway", "maynooth", "limerick", "trinity college dublin", "ucd", "esri"]
+  "United Kingdom":
+    tier: west
+    names: ["united kingdom", "u.k.", "england", "scotland", "wales", "northern ireland", "british"]
+    places: ["london", "oxford", "cambridge", "warwick", "edinburgh", "manchester", "glasgow", "bristol", "leeds", "cardiff", "durham", "york", "exeter", "nottingham", "birmingham", "sheffield", "southampton", "lse", "ucl", "bath", "lancaster", "st andrews", "belfast", "kcl", "king's college london", "queen mary", "essex", "sussex", "reading", "loughborough", "surrey", "brunel"]
+  Denmark:
+    tier: west
+    names: ["denmark", "danmark", "danish"]
+    places: ["copenhagen", "kobenhavn", "aarhus", "odense", "esbjerg", "aalborg", "roskilde", "lyngby", "cbs", "cebi", "sdu"]
+  Sweden:
+    tier: west
+    names: ["sweden", "sverige", "swedish"]
+    places: ["stockholm", "gothenburg", "goteborg", "uppsala", "lund", "umea", "linkoping", "chalmers", "kth", "orebro", "karlstad", "iies", "sofi"]
+  Norway:
+    tier: west
+    names: ["norway", "norge", "norwegian"]
+    places: ["oslo", "bergen", "trondheim", "tromso", "kristiansand", "stavanger", "nhh", "bi norwegian", "ntnu"]
+  Finland:
+    tier: west
+    names: ["finland", "suomi", "finnish"]
+    places: ["helsinki", "tampere", "turku", "oulu", "espoo", "aalto", "jyvaskyla", "vatt", "bofit"]
+  Iceland:
+    tier: west
+    names: ["iceland"]
+    places: ["reykjavik"]
+  Italy:
+    tier: west
+    names: ["italy", "italia", "italian"]
+    places: ["rome", "roma", "milan", "milano", "bocconi", "turin", "torino", "bologna", "florence", "firenze", "pisa", "naples", "napoli", "trento", "bolzano", "venice", "venezia", "padova", "padua", "eui", "european university institute", "luiss", "sant'anna", "tor vergata", "pavia", "bergamo", "siena"]
+  Spain:
+    tier: west
+    names: ["spain", "espana", "spanish"]
+    places: ["madrid", "barcelona", "valencia", "pompeu", "cemfi", "sevilla", "seville", "bilbao", "alicante", "autonoma de barcelona", "carlos iii", "barcelona school of economics", "bse", "ipeg", "iae", "imdea", "bbva"]
+  Portugal:
+    tier: west
+    names: ["portugal", "portuguese"]
+    places: ["lisbon", "lisboa", "porto", "nova sbe", "coimbra", "braga", "minho"]
+  Poland:
+    tier: other
+    names: ["poland", "polska", "polish"]
+    places: ["warsaw", "warszawa", "krakow", "wroclaw", "gdansk", "poznan"]
+  "Czech Republic":
+    tier: other
+    names: ["czech republic", "czechia", "czech"]
+    places: ["prague", "praha", "brno", "cerge-ei"]
+  Hungary:
+    tier: other
+    names: ["hungary", "hungarian"]
+    places: ["budapest", "corvinus", "ceu"]
+  Slovakia:
+    tier: other
+    names: ["slovakia", "slovak"]
+    places: ["bratislava"]
+  Slovenia:
+    tier: other
+    names: ["slovenia"]
+    places: ["ljubljana"]
+  Croatia:
+    tier: other
+    names: ["croatia"]
+    places: ["zagreb"]
+  Estonia:
+    tier: other
+    names: ["estonia", "estonian"]
+    places: ["tallinn", "tartu"]
+  Latvia:
+    tier: other
+    names: ["latvia"]
+    places: ["riga"]
+  Lithuania:
+    tier: other
+    names: ["lithuania"]
+    places: ["vilnius", "kaunas"]
+  Greece:
+    tier: other
+    names: ["greece", "greek"]
+    places: ["athens", "thessaloniki"]
+  Cyprus:
+    tier: other
+    names: ["cyprus"]
+    places: ["nicosia"]
+  Malta:
+    tier: other
+    names: ["malta"]
+    places: ["valletta"]
+  Romania:
+    tier: other
+    names: ["romania"]
+    places: ["bucharest", "cluj"]
+  Bulgaria:
+    tier: other
+    names: ["bulgaria"]
+    places: ["sofia"]
+  Serbia:
+    tier: other
+    names: ["serbia"]
+    places: ["belgrade"]
+
+non_europe:
+  names: ["united states", "usa", "u.s.", "america", "canada", "canadian", "australia", "new zealand", "china", "hong kong", "singapore", "japan", "korea", "india", "saudi arabia", "united arab emirates", "uae", "qatar", "kuwait", "israel", "morocco", "ghana", "nigeria", "kenya", "south africa", "brazil", "chile", "mexico", "argentina", "colombia", "kazakhstan", "vietnam", "malaysia", "indonesia", "taiwan", "turkey", "turkiye", "lebanon", "egypt", "tunisia", "pakistan", "bangladesh", "thailand", "philippines", "uzbekistan", "russia"]
+  places: ["melbourne", "sydney", "brisbane", "adelaide", "monash", "queensland", "ningbo", "shanghai", "beijing", "shenzhen", "dubai", "abu dhabi", "doha", "thuwal", "kaust", "benguerir", "boston", "berkeley", "stanford", "harvard", "mit", "princeton", "yale", "chicago", "new york", "nyu", "toronto", "montreal", "vancouver", "california", "texas", "massachusetts", "pennsylvania", "washington dc", "kimep", "almaty", "tokyo", "seoul", "mumbai", "bangalore", "delhi", "tel aviv", "jerusalem", "hanoi", "accra", "nairobi", "cape town", "stellenbosch"]
