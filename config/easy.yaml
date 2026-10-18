@@ -1,0 +1,25 @@
+# ======================================================================
+#  تنظیمات ساده — فقط همین فایل را ویرایش کن (از آیپد هم داخل گیت‌هاب می‌شود: 
+#  فایل را باز کن ← آیکون مداد ← تغییر بده ← Commit changes)
+#  Easy settings — you normally only ever touch this file.
+# ======================================================================
+
+# ریپوی گیت‌هاب (برای دکمه‌ی «Run now» روی صفحه). مثال: Shayanpourmasoomi/phd-radar
+github_repo: "Shayanpourmasoomi/phd-radar"
+
+# ایمیل تو؛ فقط داخل User-Agent درخواست‌ها می‌رود تا سایت‌ها بدانند چه کسی می‌خواند (ادب شبکه‌ای)
+contact_email: ""
+
+# کلمه/عبارت‌های اضافه که می‌خواهی پیدا شوند.  who: both | shayan | zahra
+# (ستاره * یعنی هر ادامه‌ی کلمه:  "auction*")
+my_keywords:
+  # - {term: "housing", who: both}
+  # - {term: "tax compliance", who: shayan}
+
+# اگر این کلمه در «عنوان» آگهی بود هرگز نشان نده
+block_title_words:
+  # - "marketing"
+
+# اگر نام این سازمان/دانشگاه در آگهی بود نشان نده
+block_orgs:
+  # - "Some University"

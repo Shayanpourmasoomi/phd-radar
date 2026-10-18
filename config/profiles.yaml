@@ -1,0 +1,424 @@
+# ---------------------------------------------------------------------------
+# What to look for.  Edit freely - changes apply on the next run (no network
+# needed: python -m agent rescore).
+#
+# Scoring (per field):
+#   strong term in TITLE  = +6      strong term in body/snippet = +3 (once per term)
+#   support term in TITLE = +2      support term in body/snippet = +1
+#   support terms only count when the posting is clearly about economics.
+# tier "strong"   : best field score >= 6
+# tier "adjacent" : economics posting with a weaker/no topic signal, or a topic
+#                   signal without the word "economics" (shown, but ranked lower)
+# anything else   : rejected (kept in output/rejected.csv so you can audit recall)
+# ---------------------------------------------------------------------------
+
+people:
+  shayan: "Shayan"
+  zahra: "Zahra"
+
+# Words that prove a posting is about economics (needed for support terms and
+# for the 'adjacent' tier).  Matched on accent-stripped lowercase text.
+economics_anchor:
+  # substring match (so "macroeconometrics", "socioeconomic", "Volkswirtschaftslehre" all count)
+  title_or_org_substrings:
+    - "econom"
+    - "volkswirtschaft"
+    - "wirtschaftswissenschaft"
+    - "wirtschaftsforschung"
+    - "wirtschaftspolitik"
+    - "okonom"
+    - "oekonom"
+    - "ekonom"
+  title_or_org_terms:
+    - "public policy"
+    - "market design"
+  body_min_hits: 3          # the substring "econom" must appear this many times in the body
+
+# Topics that make a posting a poor fit even if it mentions economics.
+# A posting is rejected when these score >= 3 and no topic field reaches 6.
+negative_terms:
+  - "corporate finance"
+  - "asset pricing"
+  - "financial economics"
+  - "financial markets"
+  - "financial intermediation"
+  - "macro-finance"
+  - "macrofinance"
+  - "household finance"
+  - "banking"
+  - "fintech"
+  - "accounting"
+  - "auditing"
+  - "marketing"
+  - "consumer behaviour"
+  - "consumer behavior"
+  - "organizational behaviour"
+  - "organizational behavior"
+  - "operations management"
+  - "supply chain"
+  - "logistics"
+  - "information systems"
+  - "business informatics"
+  - "entrepreneurship"
+  - "strategic management"
+  - "human resource management"
+  - "risk management"
+  - "actuarial"
+  - "portfolio"
+  - "derivatives"
+  - "investment"
+
+fields:
+  # ------------------------------ Shayan ---------------------------------
+  - id: urban_spatial
+    label: "Urban & spatial economics"
+    who: [shayan]
+    weight: 3.0
+    strong:
+      - "urban economics"
+      - "urban and regional economics"
+      - "spatial economics"
+      - "regional economics"
+      - "economic geography"
+      - "agglomeration"
+      - "housing market*"
+      - "housing economics"
+      - "housing policy"
+      - "real estate economics"
+      - "transport economics"
+      - "transportation economics"
+      - "public transport*"
+      - "metro"
+      - "commuting"
+      - "land use"
+      - "land-use"
+      - "urbanization"
+      - "urbanisation"
+      - "spatial econometrics"
+      - "geospatial"
+      - "location choice"
+      - "infrastructure investment"
+      - "nighttime lights"
+      - "night-time lights"
+      - "city economics"
+      - "place-based"
+      - "regional development"
+      - "regional science"
+    support: ["urban", "city", "cities", "regional", "spatial", "housing", "transport*", "infrastructure", "gis", "satellite", "remote sensing", "mobility", "neighbourhood*", "neighborhood*"]
+
+  - id: market_design_theory
+    label: "Market design, mechanism design & game theory"
+    who: [shayan, zahra]
+    weight: 3.0
+    strong:
+      - "mechanism design"
+      - "market design"
+      - "matching market*"
+      - "matching theory"
+      - "auction*"
+      - "game theory"
+      - "game-theoretic"
+      - "algorithmic game theory"
+      - "microeconomic theory"
+      - "economic theory"
+      - "contract theory"
+      - "information design"
+      - "social choice"
+      - "bayesian persuasion"
+      - "market microstructure design"
+      - "two-sided market*"
+      - "platform design"
+    support: ["matching", "incentive*", "equilibrium", "bidding", "allocation", "platform*", "strategic", "theory"]
+
+  - id: econ_history
+    label: "Economic history"
+    who: [shayan]
+    weight: 3.0
+    strong:
+      - "economic history"
+      - "historical economics"
+      - "economic historian*"
+      - "cliometric*"
+      - "long-run development"
+      - "long-run economic"
+      - "historical political economy"
+      - "history of economic*"
+    support: ["history", "historical", "archival", "long run", "long-run", "persistence", "colonial"]
+
+  - id: development
+    label: "Development economics"
+    who: [shayan]
+    weight: 3.0
+    strong:
+      - "development economics"
+      - "economics of development"
+      - "economic development"
+      - "poverty"
+      - "randomized controlled trial*"
+      - "randomised controlled trial*"
+      - "field experiment*"
+      - "developing countr*"
+      - "low-income countr*"
+      - "low and middle income"
+      - "global south"
+      - "microfinance"
+      - "social protection"
+      - "cash transfer*"
+      - "development policy"
+      - "migration economics"
+      - "economics of migration"
+    support: ["development", "inequality", "welfare", "migration", "education", "household survey*", "institutions"]
+
+  - id: public_econ
+    label: "Public economics & taxation"
+    who: [shayan]
+    weight: 3.0
+    strong:
+      - "public economics"
+      - "public finance"
+      - "taxation"
+      - "tax policy"
+      - "tax compliance"
+      - "tax evasion"
+      - "tax reform"
+      - "fiscal policy"
+      - "social insurance"
+      - "welfare state"
+      - "redistribution"
+      - "tax data"
+      - "tax record*"
+      - "tax administrative"
+      - "effective tax rate*"
+      - "public policy evaluation"
+      - "political economy"
+    support: ["tax", "taxes", "fiscal", "public sector", "policy evaluation", "government", "welfare", "administrative data"]
+
+  - id: applied_micro_causal
+    label: "Applied microeconometrics & causal inference"
+    who: [shayan, zahra]
+    weight: 3.0
+    strong:
+      - "applied microeconomics"
+      - "applied microeconometrics"
+      - "microeconometrics"
+      - "applied econometrics"
+      - "causal inference"
+      - "difference-in-differences"
+      - "diff-in-diff"
+      - "event study"
+      - "event-study"
+      - "regression discontinuity"
+      - "instrumental variable*"
+      - "policy evaluation"
+      - "program evaluation"
+      - "programme evaluation"
+      - "impact evaluation"
+      - "natural experiment*"
+      - "quasi-experiment*"
+      - "empirical microeconomics"
+      - "empirical economics"
+      - "panel data"
+      - "empirical industrial organization"
+      - "empirical research in economics"
+    support: ["econometric*", "empirical", "causal", "evaluation", "identification", "microdata", "micro-data", "administrative data", "quantitative"]
+
+  - id: ml_econ
+    label: "Machine learning & data science in economics"
+    who: [shayan]
+    weight: 2.0
+    strong:
+      - "machine learning in economics"
+      - "machine learning for economics"
+      - "causal machine learning"
+      - "econometrics and machine learning"
+      - "machine learning and econometrics"
+      - "computational economics"
+      - "text as data"
+      - "high-dimensional"
+      - "double machine learning"
+      - "economics of artificial intelligence"
+      - "economics of ai"
+      - "ai and economics"
+    support: ["machine learning", "deep learning", "neural network*", "big data", "nlp", "artificial intelligence", "data science", "ai"]
+
+  # ------------------------------- Zahra ---------------------------------
+  - id: environment_climate
+    label: "Environmental, climate & energy economics"
+    who: [zahra]
+    weight: 3.0
+    strong:
+      - "environmental economics"
+      - "environmental and resource economics"
+      - "resource economics"
+      - "natural resource economics"
+      - "climate economics"
+      - "economics of climate"
+      - "economics of adaptation"
+      - "economics of the environment"
+      - "climate policy"
+      - "climate change"
+      - "carbon pric*"
+      - "carbon tax*"
+      - "carbon market*"
+      - "emissions trading"
+      - "environmental policy"
+      - "energy economics"
+      - "energy transition"
+      - "energy policy"
+      - "air pollution"
+      - "extreme heat"
+      - "heat stress"
+      - "weather shock*"
+      - "climate adaptation"
+      - "climate risk"
+      - "sustainability economics"
+      - "ecosystem services"
+      - "biodiversity"
+      - "renewable energy"
+      - "decarbonisation"
+      - "decarbonization"
+      - "green transition"
+      - "transition risk"
+      - "integrated assessment"
+      - "climate macro*"
+      - "macroeconomics of climate"
+      - "climate and macro*"
+      - "environmental macro*"
+      - "green growth"
+      - "circular economy"
+      - "pollution"
+    support: ["climate", "environment*", "sustainab*", "energy", "emission*", "carbon", "weather", "temperature", "agriculture", "green", "adaptation"]
+
+  - id: labour
+    label: "Labour economics"
+    who: [zahra, shayan]
+    weight: 3.0
+    strong:
+      - "labour economics"
+      - "labor economics"
+      - "labour market*"
+      - "labor market*"
+      - "unemployment"
+      - "minimum wage*"
+      - "job displacement"
+      - "wage inequality"
+      - "human capital"
+      - "gender gap*"
+      - "worker mobility"
+      - "employment dynamics"
+      - "occupational"
+      - "personnel economics"
+      - "economics of education"
+      - "intergenerational mobility"
+    support: ["labour", "labor", "employment", "wage*", "workers", "skills", "occupation*", "jobs"]
+
+  - id: health_econ
+    label: "Health economics"
+    who: [zahra]
+    weight: 3.0
+    strong:
+      - "health economics"
+      - "economics of health"
+      - "healthcare market*"
+      - "health care market*"
+      - "health insurance"
+      - "health policy"
+      - "hospital competition"
+      - "economics of aging"
+      - "economics of ageing"
+      - "pharmaceutical market*"
+      - "health inequality"
+      - "public health economics"
+      - "mental health economics"
+      - "economics of mental health"
+      - "healthcare labour"
+      - "healthcare labor"
+    support: ["health", "healthcare", "hospital*", "patients", "mortality", "medical"]
+
+  - id: industrial_org
+    label: "Industrial organization & discrete choice"
+    who: [zahra, shayan]
+    weight: 3.0
+    strong:
+      - "industrial organization"
+      - "industrial organisation"
+      - "industrial economics"
+      - "competition policy"
+      - "antitrust"
+      - "market structure"
+      - "demand estimation"
+      - "discrete choice"
+      - "structural estimation"
+      - "firm dynamics"
+      - "market power"
+      - "economics of regulation"
+      - "regulation and competition"
+      - "digital markets"
+      - "platform economics"
+      - "empirical io"
+    support: ["competition", "markets", "firms", "pricing", "regulation", "mergers"]
+
+  - id: agri_food
+    label: "Agricultural, food & rural economics"
+    who: [zahra]
+    weight: 2.5
+    strong:
+      - "agricultural economics"
+      - "agricultural and food economics"
+      - "agricultural policy"
+      - "food economics"
+      - "food security"
+      - "rural economics"
+      - "rural development"
+      - "agri-food"
+      - "farm economics"
+      - "food policy"
+    support: ["agriculture", "agricultural", "farm*", "food", "rural", "crop*"]
+
+# Postings about economics with no match above show up here (adjacent tier,
+# labelled with this field).  Set to false to hide generic economics postings.
+include_generic_economics: true
+generic_who: [shayan, zahra]
+
+# ---------------------------------------------------------------------------
+# Strong terms that are only trusted when the posting is clearly about
+# economics (otherwise "climate change" / "urban" / "poverty" would pull in
+# natural-science, planning and medical postings).
+# ---------------------------------------------------------------------------
+anchored_only:
+  urban_spatial: ["urban", "metro", "commuting", "land use", "land-use", "urbanization", "urbanisation", "geospatial",
+                  "nighttime lights", "night-time lights", "regional development", "regional science", "public transport*",
+                  "housing market*", "location choice", "infrastructure investment", "place-based"]
+  market_design_theory: ["platform design", "two-sided market*"]
+  development: ["poverty", "field experiment*", "developing countr*", "low-income countr*", "low and middle income", "global south",
+                "microfinance", "social protection", "cash transfer*", "randomized controlled trial*", "randomised controlled trial*",
+                "development policy"]
+  public_econ: ["taxation", "fiscal policy", "social insurance", "welfare state", "redistribution", "public policy evaluation"]
+  applied_micro_causal: ["causal inference", "difference-in-differences", "diff-in-diff", "event study", "event-study",
+                         "regression discontinuity", "instrumental variable*", "policy evaluation", "program evaluation",
+                         "programme evaluation", "impact evaluation", "natural experiment*", "quasi-experiment*", "panel data"]
+  ml_econ: ["high-dimensional", "text as data"]
+  environment_climate: ["climate change", "biodiversity", "renewable energy", "pollution", "air pollution", "extreme heat",
+                        "heat stress", "weather shock*", "climate risk", "decarbonisation", "decarbonization",
+                        "ecosystem services", "circular economy", "green transition", "transition risk", "climate adaptation",
+                        "green growth"]
+  labour: ["unemployment", "human capital", "gender gap*", "occupational", "worker mobility", "employment dynamics", "wage inequality"]
+  health_econ: ["health insurance", "health policy", "health inequality", "economics of aging", "economics of ageing"]
+  industrial_org: ["market structure", "market power", "digital markets", "firm dynamics"]
+  agri_food: ["food security", "food policy", "rural development", "agri-food"]
+
+# Other-language equivalents (accents are ignored, so "Ökonomik" == "okonomik").
+extra_strong:
+  urban_spatial: ["stadtökonomik", "stadtoekonomik", "raumwirtschaft", "regionalökonomik", "économie urbaine", "economia urbana", "stedelijke economie",
+                  "économie régionale", "economia regionale", "regionale economie"]
+  market_design_theory: ["spieltheorie", "théorie des jeux", "teoria dei giochi", "speltheorie", "marktdesign", "mikroökonomische theorie"]
+  econ_history: ["wirtschaftsgeschichte", "histoire économique", "storia economica", "historia económica", "economische geschiedenis"]
+  development: ["entwicklungsökonomik", "économie du développement", "economia dello sviluppo", "ontwikkelingseconomie"]
+  public_econ: ["finanzwissenschaft", "économie publique", "economia pubblica", "overheidsfinanciën"]
+  applied_micro_causal: ["mikroökonometrie", "angewandte mikroökonomik", "empirische wirtschaftsforschung", "économétrie appliquée", "econometria applicata", "econometría aplicada"]
+  environment_climate: ["umweltökonomik", "umweltoekonomik", "umwelt- und ressourcenökonomik", "économie de l'environnement", "economia ambientale",
+                        "economía ambiental", "milieueconomie", "miljöekonomi", "miljøøkonomi", "energieökonomik", "klimaökonomik"]
+  labour: ["arbeitsmarktökonomik", "arbeitsmarktoekonomik", "économie du travail", "economia del lavoro", "economía laboral", "arbeidseconomie", "arbetsmarknadsekonomi", "arbejdsmarkedsøkonomi"]
+  health_econ: ["gesundheitsökonomik", "gesundheitsoekonomik", "économie de la santé", "economia sanitaria", "economía de la salud", "gezondheidseconomie", "hälsoekonomi", "sundhedsøkonomi"]
+  industrial_org: ["industrieökonomik", "économie industrielle", "economia industriale", "industriële economie", "wettbewerbsökonomik"]
+  agri_food: ["agrarökonomik", "agraroekonomik", "économie agricole", "economia agraria", "agrarische economie"]

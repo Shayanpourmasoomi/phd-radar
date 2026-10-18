@@ -1,0 +1,148 @@
+site_title: "PhD & Predoc Radar"
+
+# ---- fetching -------------------------------------------------------------
+user_agent: "phd-agent/1.0 (personal research use; contact: set-your-email@example.com)"
+request_delay_sec: 1.2        # polite pause between requests to the same site
+timeout_sec: 30
+retries: 2
+respect_robots_txt: true      # skip URLs a site's robots.txt disallows
+max_detail_fetches: 250       # full posting pages fetched per run (cached forever)
+max_detail_minutes: 40        # hard time cap for the detail-page phase of one run
+
+# ---- what counts as "new" / still open ------------------------------------
+lookback_days: 21             # daily mode: stop paging a newest-first source after this
+keep_days: 75                 # drop postings not seen on any source for this long
+drop_past_deadlines: true     # hide postings whose deadline already passed
+
+# ---- thresholds (see profiles.yaml header) ---------------------------------
+strong_min: 6
+adjacent_min_without_anchor: 3
+negative_reject_at: 3
+negative_demote_at: 6
+
+# ---- position types (the ONLY ones kept) -----------------------------------
+# Matched on the TITLE first.  If the title says nothing, the first 1500
+# characters of the posting are checked.  A title containing an exclude word
+# is dropped unless it also contains an include word ("PhD or Postdoc" stays).
+position_types:
+  # Predoc must be listed before PhD ("pre-doctoral" also contains the word "doctoral")
+  - name: "Predoc"
+    include:
+      - "pre-doctoral"
+      - "predoctoral"
+      - "predoc"
+      - "pre-doc"
+      - "pre doctoral"
+      - "contrato predoctoral"
+  - name: "PhD"
+    include:
+      - "phd"
+      - "ph d"
+      - "doctoral"
+      - "doctorate"
+      - "doctorant*"
+      - "doctorat"
+      - "doctorand*"
+      - "doktorand*"
+      - "doktorat*"
+      - "promovend*"
+      - "promotie"
+      - "promotionsstelle"
+      - "promotionsvorhaben"
+      - "promotionsstudent*"
+      - "zur promotion"
+      - "mit promotion"
+      - "dottorato"
+      - "dottorand*"
+      - "doctorado"
+      - "doctorando"
+      - "doutoramento"
+      - "stipendiat*"
+      - "phd-stilling"
+      - "doktorgrad"
+      - "vaitoskirja*"
+      - "tohtorik*"
+      - "doctoral researcher"
+      - "doctoral candidate"
+      - "doctoral student"
+      - "early stage researcher"
+      - "esr position"
+  - name: "Research assistant"
+    include:
+      - "research assistant*"
+      - "research assistantship"
+      - "assistant de recherche"
+      - "assistente di ricerca"
+      - "asistente de investigacion"
+      - "research professional"      # US predoc.org wording
+      - "research specialist"
+      - "research fellow (pre"
+  - name: "Doctoral researcher"
+    needs_body_evidence: true        # generic job titles: the text must say PhD/doctoral too
+    include:
+      - "wissenschaftliche* mitarbeiter*"
+      - "wissenschaftlicher mitarbeiter"
+      - "wiss mitarbeiter*"
+      - "wma"
+      - "junior researcher"
+      - "research associate (pre"
+exclude_in_title:
+  - "postdoc*"
+  - "post doc*"
+  - "postdoctoral"
+  - "post-doctoral"
+  - "professor*"
+  - "professur*"
+  - "lecturer"
+  - "senior lecturer"
+  - "reader in"
+  - "tenure*"
+  - "habilitation"
+  - "head of"
+  - "director"
+  - "chair of"
+  - "senior researcher"
+  - "senior research fellow"
+  - "principal investigator"
+  - "group leader"
+  - "research fellow"
+  - "technician"
+  - "phd supervisors"
+  - "summer school"
+  - "winter school"
+  - "conference"
+  - "workshop"
+  - "webinar"
+  - "master's programme"
+  - "master programme"
+  - "msc programme"
+  - "mba"
+# These kill a posting even when the title also says "PhD" (events / programmes, not jobs).
+# Postdoc / professor words do NOT: "PhD position (supervisor: Prof. X)" and "PhD or postdoc" must survive.
+hard_exclude_in_title:
+  - "summer school"
+  - "winter school"
+  - "spring school"
+  - "conference"
+  - "workshop"
+  - "webinar"
+  - "master's programme"
+  - "master programme"
+  - "msc programme"
+  - "mba"
+  - "phd supervisors"
+phd_evidence:
+  - "phd"
+  - "doctoral"
+  - "doctorate"
+  - "doktorand*"
+  - "doktorarbeit"
+  - "promotion*"
+  - "dissertation"
+  - "doctorant*"
+  - "promovend*"
+  - "dottorato"
+# generic titles (e.g. "Wissenschaftliche*r Mitarbeiter*in") must show a PhD
+# word in the first 1500 chars of the posting and no postdoc word in the first 400
+body_check_chars: 1500
+body_exclude_chars: 400

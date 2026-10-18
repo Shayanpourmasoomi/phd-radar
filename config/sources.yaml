@@ -1,0 +1,248 @@
+# ---------------------------------------------------------------------------
+# Where to look.  `verified: true` means the page layout / URL pattern was
+# inspected while building this agent (Oct 2026).  Everything else is a best
+# guess: run `python -m agent check` and fix or disable whatever reports 0 items.
+#
+# type:   euraxess | inomics | jobsacuk | academicpositions | predoc | generic | rss
+# pages:  how many result pages to read on a normal daily run
+# deep_pages: how many to read with --deep (first run / weekly backfill)
+# newest_first: stop paging once a page only contains postings older than
+#               settings.lookback_days (daily mode)
+# detail: fetch the full posting page for candidates (needed for accurate scoring)
+# default_country: used when the posting itself gives no location signal
+# ---------------------------------------------------------------------------
+
+sources:
+
+  # --- Pan-European: official EU researcher portal (covers ~40 countries) ---
+  - name: EURAXESS
+    type: euraxess
+    enabled: true
+    verified: true
+    url: "https://euraxess.ec.europa.eu/jobs/search?f%5B0%5D=offer_type%3Ajob_offer&page={page}"
+    first_page: 0
+    pages: 25
+    deep_pages: 700
+    newest_first: true
+    detail: true
+    note: "No server-side keyword filter exists, so the newest pages are crawled and filtered locally."
+
+  # --- PhDScanner: the JSON endpoint its own page uses (robots.txt explicitly allows /api/).
+  #     Newest 30 per request.  The site rejects extra query parameters, so we page with offset only.
+  - name: PhDScanner
+    type: phdscanner
+    enabled: true
+    verified: false            # worked in a real browser; untested from a server -> check it
+    url: "https://www.phdscanner.com/api/opportunities?category=standard&limit=30&offset={offset}"
+    offset_step: 30
+    pages: 6
+    deep_pages: 70
+    newest_first: true
+    assume_type: "PhD"
+    detail: false              # the posting link leads to the university's own page; the site's summary is used
+    headers: {Accept: "application/json", Referer: "https://www.phdscanner.com/phd-vacancies/standard"}
+
+  # --- AcademicTransfer (Netherlands).  Its API needs a key, so we use the public sitemap and read
+  #     only vacancies whose URL slug looks like a PhD / predoc / RA / economics post.
+  #     robots.txt asks for a 10 s crawl delay, which the agent obeys (first run is slow, later runs are quick).
+  - name: AcademicTransfer
+    type: sitemap
+    enabled: true
+    verified: false
+    url: "https://www.academictransfer.com/sitemap-vacancies.xml"
+    slug_include: "phd|ph-d|doctoral|doctorate|promovend|predoc|pre-doc|research-assistant|junior-research|onderzoeksassistent|econom"
+    default_country: Netherlands
+    detail: always
+    delay_sec: 10
+
+  # --- Economics-specific job board (all Europe, tagged by country) ---
+  - name: INOMICS - PhD candidate
+    type: inomics
+    enabled: true
+    verified: true
+    url: "https://inomics.com/top/phd-candidate?page={page}"
+    first_page: 0
+    pages: 6
+    deep_pages: 20
+    econ_specific: true
+    detail: true
+  - name: INOMICS - Research assistant
+    type: inomics
+    enabled: true
+    verified: true
+    url: "https://inomics.com/top/research-assistant-technician?page={page}"
+    first_page: 0
+    pages: 4
+    deep_pages: 12
+    econ_specific: true
+    detail: true
+  - name: INOMICS - Researcher/analyst (pre-doc style roles)
+    type: inomics
+    enabled: true
+    verified: false
+    url: "https://inomics.com/top/researcher-analyst?page={page}"
+    first_page: 0
+    pages: 4
+    deep_pages: 12
+    econ_specific: true
+    detail: true
+
+  # --- UK (jobs.ac.uk): economics category + PhD listings ---
+  - name: jobs.ac.uk - Economics
+    type: jobsacuk
+    enabled: true
+    verified: true
+    url: "https://www.jobs.ac.uk/categories/economics/{page}"
+    first_page: 1
+    pages: 8
+    deep_pages: 16
+    econ_specific: true
+    default_country: "United Kingdom"
+    detail: true
+  - name: jobs.ac.uk - PhDs
+    type: jobsacuk
+    enabled: true
+    verified: false
+    url: "https://www.jobs.ac.uk/search/phds?page={page}"
+    first_page: 1
+    pages: 6
+    deep_pages: 20
+    default_country: "United Kingdom"
+    detail: true
+
+  # --- Academic Positions (Europe-focused; all PhD positions on the site) ---
+  - name: Academic Positions - PhD (all Europe)
+    type: academicpositions
+    enabled: true
+    verified: true
+    url: "https://academicpositions.com/jobs/position/phd?page={page}"
+    first_page: 1
+    pages: 20
+    deep_pages: 30
+    detail: true
+  - name: Academic Positions - Research assistant
+    type: academicpositions
+    enabled: true
+    verified: true
+    url: "https://academicpositions.com/jobs/position/research-assistant?page={page}"
+    first_page: 1
+    pages: 5
+    deep_pages: 10
+    detail: true
+  # Economics sub-fields on Academic Positions (slugs follow the verified
+  # /jobs/field/<name> pattern but are not individually verified):
+  - name: Academic Positions - Econometrics
+    type: academicpositions
+    enabled: true
+    verified: false
+    url: "https://academicpositions.com/jobs/field/econometrics?page={page}"
+    first_page: 1
+    pages: 3
+    deep_pages: 8
+    econ_specific: true
+    detail: true
+  - name: Academic Positions - Environmental economics
+    type: academicpositions
+    enabled: true
+    verified: false
+    url: "https://academicpositions.com/jobs/field/environmental-economics?page={page}"
+    first_page: 1
+    pages: 3
+    deep_pages: 8
+    econ_specific: true
+    detail: true
+  - name: Academic Positions - Economic geography
+    type: academicpositions
+    enabled: true
+    verified: false
+    url: "https://academicpositions.com/jobs/field/economic-geography?page={page}"
+    first_page: 1
+    pages: 2
+    deep_pages: 5
+    econ_specific: true
+    detail: true
+  - name: Academic Positions - Health economics
+    type: academicpositions
+    enabled: true
+    verified: false
+    url: "https://academicpositions.com/jobs/field/health-economics?page={page}"
+    first_page: 1
+    pages: 2
+    deep_pages: 5
+    econ_specific: true
+    detail: true
+  - name: Academic Positions - Labour economics
+    type: academicpositions
+    enabled: true
+    verified: false
+    url: "https://academicpositions.com/jobs/field/labour-economics?page={page}"
+    first_page: 1
+    pages: 2
+    deep_pages: 5
+    econ_specific: true
+    detail: true
+  - name: Academic Positions - Development economics
+    type: academicpositions
+    enabled: true
+    verified: false
+    url: "https://academicpositions.com/jobs/field/development-economics?page={page}"
+    first_page: 1
+    pages: 2
+    deep_pages: 5
+    econ_specific: true
+    detail: true
+  - name: Academic Positions - Economic history
+    type: academicpositions
+    enabled: true
+    verified: false
+    url: "https://academicpositions.com/jobs/field/economic-history?page={page}"
+    first_page: 1
+    pages: 2
+    deep_pages: 5
+    econ_specific: true
+    detail: true
+  - name: Academic Positions - Game theory
+    type: academicpositions
+    enabled: true
+    verified: false
+    url: "https://academicpositions.com/jobs/field/game-theory?page={page}"
+    first_page: 1
+    pages: 2
+    deep_pages: 5
+    econ_specific: true
+    detail: true
+
+  # --- Pre-doc / RA board (mostly US; European ones are kept, the rest rejected) ---
+  - name: PREDOC.org opportunities
+    type: predoc
+    enabled: true
+    verified: true
+    url: "https://www.predoc.org/opportunities"
+    pages: 1
+    deep_pages: 1
+    econ_specific: true
+    default_country: "United States"
+    assume_type: "Predoc/RA"
+    detail: false
+    note: "Links go through bit.ly redirects; the listing already carries fields and deadline."
+
+  # --- National / institutional pages: ADD YOUR OWN here ---------------------
+  # Any page that lists postings as links works with type: generic.
+  # link_regex = regex a posting URL must match; country = default for that site.
+  - name: "Example - University of Copenhagen PhD vacancies"
+    type: generic
+    enabled: false
+    verified: false
+    url: "https://employment.ku.dk/phd/"
+    link_regex: "employment\\.ku\\.dk/.+"
+    country: "Denmark"
+    pages: 1
+    detail: true
+    note: "Template only - enable after `python -m agent check` shows items."
+  - name: "Example - RSS feed of any vacancy page"
+    type: rss
+    enabled: false
+    verified: false
+    url: "https://example.org/vacancies.rss"
+    country: ""
+    detail: true

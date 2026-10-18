@@ -1,0 +1,53 @@
+# Runs the agent on GitHub's servers (no laptop / iPad needs to be on) and publishes the page with GitHub Pages.
+#   - every day automatically (cron below, UTC; 05:30 UTC = 09:00 Tehran)
+#   - or on demand: GitHub -> Actions -> "daily" -> Run workflow   (works from the iPad)
+# One-time setup: repo Settings -> Pages -> Build and deployment -> Source: "GitHub Actions".
+# No secrets are used.
+name: daily
+on:
+  schedule: [{cron: "30 5 * * *"}]
+  workflow_dispatch:
+    inputs:
+      deep:
+        description: "Deep crawl (read many more pages per source; slow, use for the first run or a weekly backfill)"
+        type: boolean
+        default: false
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+  actions: write            # only used to keep the schedule alive (GitHub pauses idle schedules after 60 days)
+concurrency: {group: pages, cancel-in-progress: false}
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    environment:
+      name: github-pages
+      url: "${{ steps.deploy.outputs.page_url }}"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12", cache: pip}
+      - run: pip install -r requirements.txt
+      - name: Restore posting database
+        uses: actions/cache@v4
+        with:
+          path: data
+          key: "postings-${{ github.run_id }}"
+          restore-keys: "postings-"
+      - name: Run agent
+        run: |
+          if [ "${{ inputs.deep }}" = "true" ] || [ ! -f data/postings.sqlite ]; then
+            python -m agent run --deep      # first run, or asked for
+          else
+            python -m agent run
+          fi
+      - name: Keep the schedule alive
+        run: gh api -X PUT "repos/${{ github.repository }}/actions/workflows/daily.yml/enable" || true
+        env:
+          GH_TOKEN: "${{ github.token }}"
+      - uses: actions/upload-pages-artifact@v3
+        with: {path: output}
+      - id: deploy
+        uses: actions/deploy-pages@v4
