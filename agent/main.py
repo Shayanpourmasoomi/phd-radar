@@ -67,6 +67,7 @@ def cmd_check(cfg: Config, today: dt.date) -> int:
         for it in items[:2]:
             print(f"      e.g. {it['title'][:90]}")
         bad += 0 if h["ok"] else 1
+    http.close()
     print(f"\n{bad} source(s) need attention.  Fix the URL in config/sources.yaml or set enabled: false.")
     return 0 if bad == 0 else 1
 
@@ -98,13 +99,15 @@ def cmd_run(cfg: Config, today: dt.date, deep: bool) -> int:
             break
         d = evaluate(it, cfg, today)
         if needs_detail(it, cfg, d):
-            html, err = http.get(it["url"], delay=(it.get("source_opts") or {}).get("delay_sec"))
+            so = it.get("source_opts") or {}
+            html, err = http.get(it["url"], delay=so.get("delay_sec"), render=so.get("render"))
             fetched += 1
             if html is None:
                 continue
             info = fetch_detail(html, today)
             dbm.set_body(con, it["url"], info["body"], info["deadline"], info["rolling"], info["location"], info["org"])
     con.commit()
+    http.close()
     print(f"detail pages fetched: {fetched}")
 
     kept, rejected = evaluate_all(con, cfg, today)

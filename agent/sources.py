@@ -237,6 +237,49 @@ def parse_sitemap(xml: str, base: str, today: dt.date, slug_include: str | None 
                       "posted": None, "deadline": None, "rolling": False})
     return items
 
+
+# --------------------------------------------------------------------------- university vacancy pages (any site; works on rendered HTML)
+# A posting is only worth keeping at this stage if the link text / its card mentions a doctoral-type post.
+_UNI_KEEP = re.compile(
+    r"ph\.?\s?d|doctoral|doctorate|doctorand|doctorant|doktorand|doktorat|doktorier|promovend|promotion|studentship|stipendiat|"
+    r"pre-?doc|research assistant|research associate|junior researcher|early stage researcher|"
+    r"tohtori|v\u00e4it\u00f6s|jatko-opisk|doctorad|predoctoral|contrato predoc|investigador.{0,12}predoc|ayudante de investig|"
+    r"thèse|these doctorale|contrat doctoral|dottorat|wissenschaftliche[r]? mitarbeit|assistant.e? doctorant|"
+    r"forskarutbildning|doktorandtj|forskerstuderende|ph\.d\.-stipend", re.I)
+
+
+def parse_university(html: str, base: str, today: dt.date, link_regex: str | None = None, org: str | None = None,
+                     country: str | None = None) -> list[dict]:
+    soup = _soup(html)
+    for t in soup(["nav", "footer", "script", "style", "noscript"]):
+        t.decompose()
+    rx = re.compile(link_regex) if link_regex else None
+    items, seen = [], set()
+    for a in soup.find_all("a", href=True):
+        href = a["href"].strip()
+        if href.startswith(("#", "mailto:", "tel:", "javascript:")):
+            continue
+        url = urljoin(base, href).split("#")[0]
+        title = re.sub(r"\s+", " ", a.get_text(" ", strip=True))
+        if rx and not rx.search(url):
+            continue
+        if not (10 <= len(title) <= 220) or url in seen:
+            continue
+        box = a
+        for _ in range(5):                      # the enclosing "card": climb while it still holds only this posting's link(s)
+            par = box.parent
+            if par is None or len(par.find_all("a", href=True)) > 2 or len(par.get_text(" ", strip=True)) > 600:
+                break
+            box = par
+        flat = re.sub(r"\s+", " ", box.get_text(" ", strip=True))[:600]
+        if not _UNI_KEEP.search(title) and not _UNI_KEEP.search(flat[:300]):
+            continue
+        seen.add(url)
+        deadline, rolling = find_deadline(flat, today)
+        items.append({"url": url, "title": title, "org": org, "location": country, "snippet": flat,
+                      "posted": None, "deadline": _iso(deadline), "rolling": rolling})
+    return items
+
 # --------------------------------------------------------------------------- generic + RSS
 def parse_generic(html: str, base: str, today: dt.date, link_regex: str, country: str | None) -> list[dict]:
     soup = _soup(html)
@@ -288,13 +331,15 @@ def parse_page(src: dict, html: str, today: dt.date) -> list[dict]:
         return parse_generic(html, base, today, src.get("link_regex", r"."), src.get("country"))
     if t == "rss":
         return parse_rss(html, base, today, src.get("country"))
+    if t == "university":
+        return parse_university(html, base, today, src.get("link_regex"), src.get("org"), src.get("country"))
     if t == "sitemap":
         return parse_sitemap(html, base, today, src.get("slug_include"), src.get("id_regex", r"/jobs/(\d+)/"))
     return PARSERS[t](html, base, today)
 
 
 def source_opts(src: dict) -> dict:
-    return {k: src[k] for k in ("econ_specific", "default_country", "assume_type", "detail", "delay_sec") if k in src}
+    return {k: src[k] for k in ("econ_specific", "default_country", "assume_type", "detail", "delay_sec", "render") if k in src}
 
 
 def fetch_source(src: dict, http, cfg, today: dt.date, deep: bool = False, first_page_only: bool = False):
@@ -302,10 +347,10 @@ def fetch_source(src: dict, http, cfg, today: dt.date, deep: bool = False, first
     pages = 1 if first_page_only else (src.get("deep_pages", src.get("pages", 1)) if deep else src.get("pages", 1))
     first = src.get("first_page", 1)
     lookback = dt.timedelta(days=cfg.settings["lookback_days"])
-    all_items, seen_urls, err, empty_pages = [], set(), None, 0
+    all_items, seen_urls, err, note = [], set(), None, None
     for i in range(pages):
         url = src["url"].format(page=first + i, offset=i * int(src.get("offset_step", 0))) if ("{page}" in src["url"] or "{offset}" in src["url"]) else src["url"]
-        html, e = http.get(url, delay=src.get("delay_sec"), headers=src.get("headers"))
+        html, e = http.get(url, delay=src.get("delay_sec"), headers=src.get("headers"), render=src.get("render"))
         if html is None:
             err = f"{url} -> {e}"
             break
@@ -321,16 +366,19 @@ def fetch_source(src: dict, http, cfg, today: dt.date, deep: bool = False, first
             b["source_opts"] = source_opts(src)
         all_items.extend(new)
         if not new:
-            empty_pages += 1
-            if empty_pages >= 1:
-                break
+            note = f"stopped at page {i + 1}: {'no postings parsed' if not batch else 'only repeats'} ({len(html) // 1024} KB page)"
+            break
         if src.get("newest_first") and not deep and new:
             dated = [dt.date.fromisoformat(b["posted"]) for b in new if b.get("posted")]
             if dated and all(d < today - lookback for d in dated):
                 break
-    ok = err is None and len(all_items) > 0
+    ok = len(all_items) > 0 and (err is None or len(all_items) >= 10)      # a late failure after real data = partial, not dead
     if err is None and not all_items:
         err = "page loaded but 0 postings parsed (layout changed or wrong URL?)"
+    elif err and ok:
+        err = "partial: " + err
+    if note and not err:
+        err = "note: " + note
     return all_items, {"source": src["name"], "ok": ok, "n_items": len(all_items), "error": err, "verified": bool(src.get("verified"))}
 
 

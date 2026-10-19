@@ -29,7 +29,11 @@
 تنظیمات پیشرفته‌تر: `config/profiles.yaml` (حوزه‌ها)، `config/sources.yaml` (منابع)، `config/settings.yaml`، `config/geography.yaml`.
 
 ## منابع
-EURAXESS · INOMICS (PhD، RA، researcher) · jobs.ac.uk · **Academic Positions** (کلی + ۸ صفحه‌ی حوزه‌ای) · **AcademicTransfer** (هلند؛ از sitemap رسمی چون API‌اش کلید می‌خواهد؛ طبق robots.txt بین درخواست‌ها ۱۰ ثانیه صبر می‌کند، پس اولین اجرا کند است) · **PhDScanner** (از همان JSON که خود سایت استفاده می‌کند و robots.txt اجازه داده) · PREDOC.org (آگهی‌های غیراروپایی حذف می‌شوند).
+EURAXESS · INOMICS (PhD، RA، researcher) · jobs.ac.uk · **AcademicTransfer** (هلند؛ از sitemap رسمی چون API‌اش کلید می‌خواهد؛ طبق robots.txt بین درخواست‌ها ۱۰ ثانیه صبر می‌کند، پس اولین اجرا کند است) · **PhDScanner** (از همان JSON که خود سایت استفاده می‌کند و robots.txt اجازه داده) · PREDOC.org (آگهی‌های غیراروپایی حذف می‌شوند).
+
+**صفحه‌ی موقعیت‌های شغلی ۱۸ دانشگاه** (`type: university`): ETH، Zurich، Basel، Stockholm، Uppsala، Lund، Gothenburg، KTH، Aalto، Helsinki، Copenhagen، Aalborg، CBS، Luxembourg، Oslo، Cambridge (studentships)، Manchester، Glasgow. هر صفحه با یک مرورگر headless (Playwright/Chromium) خوانده می‌شود؛ فقط صفحه‌ی اول فهرست.
+
+**Academic Positions غیرفعال است**: سرورهای GitHub را با خطای 403 رد می‌کند و من دور زدن محافظ آن را انجام نمی‌دهم.
 منبع جدید: یک بلوک به `config/sources.yaml` اضافه کن (نمونه‌ها داخل فایل).
 
 ## چطور فیلتر می‌کند
