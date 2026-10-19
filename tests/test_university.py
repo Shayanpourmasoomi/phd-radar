@@ -10,7 +10,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from agent.http import Http  # noqa: E402
 from agent.logic import Config, evaluate  # noqa: E402
-from agent.sources import fetch_source, parse_university  # noqa: E402
+from agent.sources import fetch_source, parse_oraclehcm, parse_university  # noqa: E402
 
 TODAY = dt.date(2026, 10, 19)
 
@@ -49,6 +49,19 @@ class Static(unittest.TestCase):
         self.assertEqual(a["org"], "Example Uni")
         d = evaluate({**a, "source_opts": {}}, Config(), TODAY)
         self.assertNotEqual(d["tier"], "rejected", d["reason"])
+
+
+class Oracle(unittest.TestCase):
+    def test_parse_oraclehcm(self):
+        js = '{"items":[{"requisitionList":[{"Id":"15099","Title":"PhD Studentship in Labour Economics","PostedDate":"2026-10-15","PostingEndDate":"2026-11-27","Department":"Economics","PrimaryLocation":"Edinburgh - Central Area, Midlothian, United Kingdom","ShortDescriptionStr":"Fully funded PhD in applied economics."},{"Id":"","Title":"x"}]}]}'
+        its = parse_oraclehcm(js, "https://h/api", TODAY, "https://h/job/{id}", "University of Edinburgh")
+        self.assertEqual(len(its), 1)
+        self.assertEqual(its[0]["url"], "https://h/job/15099")
+        self.assertEqual(its[0]["deadline"], "2026-11-27")
+        self.assertEqual(its[0]["org"], "University of Edinburgh")
+        d = evaluate({**its[0], "source_opts": {"default_country": "United Kingdom"}}, Config(), TODAY)
+        self.assertNotEqual(d["tier"], "rejected", d["reason"])
+        self.assertEqual(parse_oraclehcm("not json", "u", TODAY), [])
 
 
 class Handler(http.server.BaseHTTPRequestHandler):

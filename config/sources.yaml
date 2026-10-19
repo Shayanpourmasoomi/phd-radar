@@ -485,6 +485,41 @@ sources:
     delay_sec: 6
     render: {wait_ms: 2500}
 
+  # --- Scotland and Ireland (added on request) ---
+  - name: "University of Edinburgh (all vacancies)"
+    type: oraclehcm
+    enabled: true
+    verified: true
+    url: "https://elxw.fa.em3.oraclecloud.com/hcmRestApi/resources/latest/recruitingCEJobRequisitions?onlyData=true&expand=requisitionList.secondaryLocations&finder=findReqs;siteNumber=CX_1001,limit=50,offset={offset},sortBy=POSTING_DATES_DESC"
+    job_url: "https://elxw.fa.em3.oraclecloud.com/hcmUI/CandidateExperience/en/sites/CX_1001/job/{id}"
+    org: "University of Edinburgh"
+    offset_step: 50
+    pages: 2
+    deep_pages: 4
+    default_country: "United Kingdom"
+    detail: false
+    note: "Edinburgh's public career-site data (the same JSON its own page loads); the site holds about 70 postings in all."
+  - name: "jobs.ac.uk - Scotland"
+    type: jobsacuk
+    enabled: true
+    verified: true
+    url: "https://www.jobs.ac.uk/categories/scotland-jobs/{page}"
+    first_page: 1
+    pages: 4
+    deep_pages: 8
+    default_country: "United Kingdom"
+    detail: true
+  - name: "jobs.ac.uk - Ireland"
+    type: jobsacuk
+    enabled: true
+    verified: true
+    url: "https://www.jobs.ac.uk/categories/ireland-jobs/{page}"
+    first_page: 1
+    pages: 4
+    deep_pages: 8
+    default_country: "Ireland"
+    detail: true
+
   # --- National / institutional pages: ADD YOUR OWN here ---------------------
   # Any page that lists postings as links works with type: generic.
   # link_regex = regex a posting URL must match; country = default for that site.
