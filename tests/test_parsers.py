@@ -185,7 +185,7 @@ class FakeHttp:
     def __init__(self, pages):
         self.pages = pages
 
-    def get(self, url, delay=None, headers=None):
+    def get(self, url, delay=None, headers=None, render=None):
         for k, v in self.pages.items():
             if url.startswith(k):
                 return v, None
@@ -219,7 +219,7 @@ class Pipeline(unittest.TestCase):
         seen = []
 
         class H:
-            def get(self, url, delay=None, headers=None):
+            def get(self, url, delay=None, headers=None, render=None):
                 seen.append(url)
                 return (PHDSCANNER, None) if "offset=0" in url else ('{"data":[]}', None)
         items, h = fetch_source(src, H(), cfg, TODAY)

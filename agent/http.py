@@ -16,6 +16,8 @@ class Http:
         self._last: dict[str, float] = {}
         self._robots: dict[str, urllib.robotparser.RobotFileParser | None] = {}
         self.requests_made = 0
+        self._pw = None          # Playwright / Chromium, started lazily, only for sources with `render:`
+        self._browser = None
 
     def _allowed(self, url: str) -> bool:
         if not self.s.get("respect_robots_txt", True):
@@ -45,13 +47,72 @@ class Http:
         except Exception:
             return 0.0
 
-    def get(self, url: str, delay: float | None = None, headers: dict | None = None) -> tuple[str | None, str | None]:
+    def _render(self, url: str, opts: dict) -> tuple[str | None, str | None]:
+        """Load a JavaScript-driven page in headless Chromium and return the final HTML.
+        opts: click_text (regex of a 'load more' button), max_clicks, scrolls, wait_ms."""
+        import re as _re
+        try:
+            if self._browser is None:
+                from playwright.sync_api import sync_playwright
+                self._pw = sync_playwright().start()
+                self._browser = self._pw.chromium.launch()
+        except Exception as e:
+            return None, f"browser unavailable ({type(e).__name__}: {str(e)[:80]})"
+        page = None
+        try:
+            page = self._browser.new_page(user_agent=self.s["user_agent"], locale="en-GB")
+            page.set_default_timeout(30000)
+            page.goto(url, wait_until="domcontentloaded")
+            try:
+                page.wait_for_load_state("networkidle", timeout=12000)
+            except Exception:
+                pass
+            page.wait_for_timeout(int(opts.get("wait_ms", 1500)))
+            for _ in range(int(opts.get("scrolls", 0))):
+                page.mouse.wheel(0, 20000)
+                page.wait_for_timeout(900)
+            rx = opts.get("click_text")
+            for _ in range(int(opts.get("max_clicks", 0)) if rx else 0):
+                btn = page.get_by_role("button", name=_re.compile(rx, _re.I)).first
+                if not btn.count():
+                    btn = page.get_by_role("link", name=_re.compile(rx, _re.I)).first
+                if not btn.count() or not btn.is_visible():
+                    break
+                btn.click()
+                page.wait_for_timeout(1500)
+            return page.content(), None
+        except Exception as e:
+            return None, f"{type(e).__name__}: {str(e)[:120]}"
+        finally:
+            if page is not None:
+                page.close()
+
+    def close(self):
+        try:
+            if self._browser:
+                self._browser.close()
+            if self._pw:
+                self._pw.stop()
+        except Exception:
+            pass
+
+    def get(self, url: str, delay: float | None = None, headers: dict | None = None, render: dict | None = None) -> tuple[str | None, str | None]:
         """-> (html, error).  `delay` = minimum seconds between requests to this host
-        (the larger of this, the global setting and the site's robots.txt Crawl-delay)."""
+        (the larger of this, the global setting and the site's robots.txt Crawl-delay).
+        `render` = options dict -> load with a real (headless) browser instead of plain HTTP."""
         if not self._allowed(url):
             return None, "disallowed by robots.txt"
         host = urlparse(url).netloc
         gap = max(self.s["request_delay_sec"], delay or 0, self._crawl_delay(url))
+        if render is not None and render is not False:
+            wait = gap - (time.time() - self._last.get(host, 0))
+            if wait > 0:
+                time.sleep(wait)
+            self._last[host] = time.time()
+            self.requests_made += 1
+            html, err = self._render(url, render if isinstance(render, dict) else {})
+            self._last[host] = time.time()
+            return html, err
         last_err = None
         for attempt in range(self.s.get("retries", 2) + 1):
             wait = gap - (time.time() - self._last.get(host, 0))

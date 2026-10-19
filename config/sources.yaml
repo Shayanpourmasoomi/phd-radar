@@ -113,16 +113,18 @@ sources:
   # --- Academic Positions (Europe-focused; all PhD positions on the site) ---
   - name: Academic Positions - PhD (all Europe)
     type: academicpositions
-    enabled: true
+    enabled: false
     verified: true
     url: "https://academicpositions.com/jobs/position/phd?page={page}"
     first_page: 1
     pages: 20
     deep_pages: 30
     detail: true
+    note_blocked: "HTTP 403 when fetched from GitHub servers (bot protection) - disabled; not bypassed."
+
   - name: Academic Positions - Research assistant
     type: academicpositions
-    enabled: true
+    enabled: false
     verified: true
     url: "https://academicpositions.com/jobs/position/research-assistant?page={page}"
     first_page: 1
@@ -131,9 +133,11 @@ sources:
     detail: true
   # Economics sub-fields on Academic Positions (slugs follow the verified
   # /jobs/field/<name> pattern but are not individually verified):
+    note_blocked: "HTTP 403 when fetched from GitHub servers (bot protection) - disabled; not bypassed."
+
   - name: Academic Positions - Econometrics
     type: academicpositions
-    enabled: true
+    enabled: false
     verified: false
     url: "https://academicpositions.com/jobs/field/econometrics?page={page}"
     first_page: 1
@@ -141,9 +145,11 @@ sources:
     deep_pages: 8
     econ_specific: true
     detail: true
+    note_blocked: "HTTP 403 when fetched from GitHub servers (bot protection) - disabled; not bypassed."
+
   - name: Academic Positions - Environmental economics
     type: academicpositions
-    enabled: true
+    enabled: false
     verified: false
     url: "https://academicpositions.com/jobs/field/environmental-economics?page={page}"
     first_page: 1
@@ -151,9 +157,11 @@ sources:
     deep_pages: 8
     econ_specific: true
     detail: true
+    note_blocked: "HTTP 403 when fetched from GitHub servers (bot protection) - disabled; not bypassed."
+
   - name: Academic Positions - Economic geography
     type: academicpositions
-    enabled: true
+    enabled: false
     verified: false
     url: "https://academicpositions.com/jobs/field/economic-geography?page={page}"
     first_page: 1
@@ -161,9 +169,11 @@ sources:
     deep_pages: 5
     econ_specific: true
     detail: true
+    note_blocked: "HTTP 403 when fetched from GitHub servers (bot protection) - disabled; not bypassed."
+
   - name: Academic Positions - Health economics
     type: academicpositions
-    enabled: true
+    enabled: false
     verified: false
     url: "https://academicpositions.com/jobs/field/health-economics?page={page}"
     first_page: 1
@@ -171,9 +181,11 @@ sources:
     deep_pages: 5
     econ_specific: true
     detail: true
+    note_blocked: "HTTP 403 when fetched from GitHub servers (bot protection) - disabled; not bypassed."
+
   - name: Academic Positions - Labour economics
     type: academicpositions
-    enabled: true
+    enabled: false
     verified: false
     url: "https://academicpositions.com/jobs/field/labour-economics?page={page}"
     first_page: 1
@@ -181,9 +193,11 @@ sources:
     deep_pages: 5
     econ_specific: true
     detail: true
+    note_blocked: "HTTP 403 when fetched from GitHub servers (bot protection) - disabled; not bypassed."
+
   - name: Academic Positions - Development economics
     type: academicpositions
-    enabled: true
+    enabled: false
     verified: false
     url: "https://academicpositions.com/jobs/field/development-economics?page={page}"
     first_page: 1
@@ -191,9 +205,11 @@ sources:
     deep_pages: 5
     econ_specific: true
     detail: true
+    note_blocked: "HTTP 403 when fetched from GitHub servers (bot protection) - disabled; not bypassed."
+
   - name: Academic Positions - Economic history
     type: academicpositions
-    enabled: true
+    enabled: false
     verified: false
     url: "https://academicpositions.com/jobs/field/economic-history?page={page}"
     first_page: 1
@@ -201,9 +217,11 @@ sources:
     deep_pages: 5
     econ_specific: true
     detail: true
+    note_blocked: "HTTP 403 when fetched from GitHub servers (bot protection) - disabled; not bypassed."
+
   - name: Academic Positions - Game theory
     type: academicpositions
-    enabled: true
+    enabled: false
     verified: false
     url: "https://academicpositions.com/jobs/field/game-theory?page={page}"
     first_page: 1
@@ -213,6 +231,8 @@ sources:
     detail: true
 
   # --- Pre-doc / RA board (mostly US; European ones are kept, the rest rejected) ---
+    note_blocked: "HTTP 403 when fetched from GitHub servers (bot protection) - disabled; not bypassed."
+
   - name: PREDOC.org opportunities
     type: predoc
     enabled: true
@@ -225,6 +245,245 @@ sources:
     assume_type: "Predoc/RA"
     detail: false
     note: "Links go through bit.ly redirects; the listing already carries fields and deadline."
+
+
+  # --- University vacancy pages (type: university; read with a headless browser) ---
+  # Each page was opened in a real browser and the extractor found PhD / RA / doctoral postings (Oct 2026).
+  # Only the first page of each list is read. The usual filters (field, region, type) apply afterwards.
+  - name: "ETH Zurich"
+    type: university
+    enabled: true
+    verified: true
+    url: "https://jobs.ethz.ch/"
+    org: "ETH Zurich"
+    country: "Switzerland"
+    default_country: "Switzerland"
+    pages: 1
+    deep_pages: 1
+    detail: true
+    delay_sec: 6
+    render: {wait_ms: 2500}
+  - name: "University of Zurich"
+    type: university
+    enabled: true
+    verified: true
+    url: "https://ohws.prospective.ch/public/v2/careercenter/1002007/?lang=en"
+    org: "University of Zurich"
+    country: "Switzerland"
+    default_country: "Switzerland"
+    pages: 1
+    deep_pages: 1
+    detail: true
+    delay_sec: 6
+    render: {wait_ms: 2500}
+  - name: "University of Basel"
+    type: university
+    enabled: true
+    verified: true
+    url: "https://jobs.unibas.ch/?lang=en"
+    org: "University of Basel"
+    country: "Switzerland"
+    default_country: "Switzerland"
+    pages: 1
+    deep_pages: 1
+    detail: true
+    delay_sec: 6
+    render: {wait_ms: 2500}
+  - name: "Stockholm University"
+    type: university
+    enabled: true
+    verified: true
+    url: "https://su.varbi.com/en/what:findjob/?showresult=1&categories=1&checklist=1&orglevel=1&ref=1&nologin=1&"
+    org: "Stockholm University"
+    country: "Sweden"
+    default_country: "Sweden"
+    pages: 1
+    deep_pages: 1
+    detail: true
+    delay_sec: 6
+    render: {wait_ms: 2500}
+  - name: "Uppsala University"
+    type: university
+    enabled: true
+    verified: true
+    url: "https://www.uu.se/en/about-uu/join-us/jobs-and-vacancies"
+    org: "Uppsala University"
+    country: "Sweden"
+    default_country: "Sweden"
+    pages: 1
+    deep_pages: 1
+    detail: true
+    delay_sec: 6
+    render: {wait_ms: 2500}
+  - name: "Lund University"
+    type: university
+    enabled: true
+    verified: true
+    url: "https://www.lunduniversity.lu.se/vacancies"
+    org: "Lund University"
+    country: "Sweden"
+    default_country: "Sweden"
+    pages: 1
+    deep_pages: 1
+    detail: true
+    delay_sec: 6
+    render: {wait_ms: 2500}
+  - name: "University of Gothenburg"
+    type: university
+    enabled: true
+    verified: true
+    url: "https://gu.se/en/work-at-the-university-of-gothenburg/vacancies"
+    org: "University of Gothenburg"
+    country: "Sweden"
+    default_country: "Sweden"
+    pages: 1
+    deep_pages: 1
+    detail: true
+    delay_sec: 6
+    render: {wait_ms: 2500}
+  - name: "KTH Royal Institute of Technology"
+    type: university
+    enabled: true
+    verified: true
+    url: "https://www.kth.se/lediga-jobb?l=en"
+    org: "KTH Royal Institute of Technology"
+    country: "Sweden"
+    default_country: "Sweden"
+    pages: 1
+    deep_pages: 1
+    detail: true
+    delay_sec: 6
+    render: {wait_ms: 2500}
+  - name: "Aalto University"
+    type: university
+    enabled: true
+    verified: true
+    url: "https://www.aalto.fi/en/open-positions"
+    org: "Aalto University"
+    country: "Finland"
+    default_country: "Finland"
+    pages: 1
+    deep_pages: 1
+    detail: true
+    delay_sec: 6
+    render: {wait_ms: 2500}
+  - name: "University of Helsinki (doctoral)"
+    type: university
+    enabled: true
+    verified: true
+    url: "https://jobs.helsinki.fi/search/?q=doctoral"
+    org: "University of Helsinki"
+    country: "Finland"
+    default_country: "Finland"
+    pages: 1
+    deep_pages: 1
+    detail: true
+    delay_sec: 6
+    render: {wait_ms: 2500}
+  - name: "University of Copenhagen"
+    type: university
+    enabled: true
+    verified: true
+    url: "https://jobportal.ku.dk/phd/"
+    org: "University of Copenhagen"
+    country: "Denmark"
+    default_country: "Denmark"
+    pages: 1
+    deep_pages: 1
+    detail: true
+    delay_sec: 6
+    render: {wait_ms: 2500}
+  - name: "Aalborg University"
+    type: university
+    enabled: true
+    verified: true
+    url: "https://www.vacancies.aau.dk/phd-positions"
+    org: "Aalborg University"
+    country: "Denmark"
+    default_country: "Denmark"
+    pages: 1
+    deep_pages: 1
+    detail: true
+    delay_sec: 6
+    render: {wait_ms: 2500}
+  - name: "Copenhagen Business School"
+    type: university
+    enabled: true
+    verified: true
+    url: "https://www.cbs.dk/en/about-cbs/job-and-career/vacant-positions"
+    org: "Copenhagen Business School"
+    country: "Denmark"
+    default_country: "Denmark"
+    pages: 1
+    deep_pages: 1
+    detail: true
+    delay_sec: 6
+    render: {wait_ms: 2500}
+  - name: "University of Luxembourg"
+    type: university
+    enabled: true
+    verified: true
+    url: "https://www.uni.lu/en/about/work/explore-our-jobs/"
+    org: "University of Luxembourg"
+    country: "Luxembourg"
+    default_country: "Luxembourg"
+    pages: 1
+    deep_pages: 1
+    detail: true
+    delay_sec: 6
+    render: {wait_ms: 2500}
+  - name: "University of Oslo"
+    type: university
+    enabled: true
+    verified: true
+    url: "https://www.uio.no/english/about/vacancies/academic/"
+    org: "University of Oslo"
+    country: "Norway"
+    default_country: "Norway"
+    pages: 1
+    deep_pages: 1
+    detail: true
+    delay_sec: 6
+    render: {wait_ms: 2500}
+  - name: "University of Cambridge (studentships)"
+    type: university
+    enabled: true
+    verified: true
+    url: "https://www.cam.ac.uk/jobs/term/studentships"
+    org: "University of Cambridge"
+    country: "United Kingdom"
+    default_country: "United Kingdom"
+    pages: 1
+    deep_pages: 1
+    detail: true
+    delay_sec: 6
+    render: {wait_ms: 2500}
+  - name: "University of Manchester"
+    type: university
+    enabled: true
+    verified: true
+    url: "https://www.jobs.manchester.ac.uk/Home/Job"
+    org: "University of Manchester"
+    country: "United Kingdom"
+    default_country: "United Kingdom"
+    pages: 1
+    deep_pages: 1
+    detail: true
+    delay_sec: 6
+    render: {wait_ms: 2500}
+  - name: "University of Glasgow"
+    type: university
+    enabled: true
+    verified: true
+    url: "https://www.jobs.gla.ac.uk/jobs"
+    org: "University of Glasgow"
+    country: "United Kingdom"
+    default_country: "United Kingdom"
+    pages: 1
+    deep_pages: 1
+    detail: true
+    delay_sec: 6
+    render: {wait_ms: 2500}
 
   # --- National / institutional pages: ADD YOUR OWN here ---------------------
   # Any page that lists postings as links works with type: generic.
