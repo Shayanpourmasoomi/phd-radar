@@ -211,6 +211,28 @@ def parse_phdscanner(text: str, base: str, today: dt.date) -> list[dict]:
     return items
 
 
+# --------------------------------------------------------------------------- Oracle HCM "candidate experience" (e.g. Edinburgh)
+def parse_oraclehcm(text: str, base: str, today: dt.date, job_url: str = "", org: str | None = None) -> list[dict]:
+    """The public JSON behind Oracle-hosted career sites (the site's own page calls it)."""
+    try:
+        data = json.loads(text)
+    except ValueError:
+        return []
+    items = []
+    for blk in data.get("items") or []:
+        for r in blk.get("requisitionList") or []:
+            rid, title = r.get("Id"), (r.get("Title") or "").strip()
+            if not rid or not title:
+                continue
+            url = job_url.format(id=rid) if job_url else f"{base}#job-{rid}"
+            snippet = " ".join(x for x in (r.get("Department"), r.get("ShortDescriptionStr")) if x)
+            items.append({"url": url, "title": title, "org": org, "location": r.get("PrimaryLocation"),
+                          "snippet": re.sub(r"\s+", " ", snippet)[:900] or None,
+                          "posted": _iso(parse_date(r.get("PostedDate"), today)),
+                          "deadline": _iso(parse_date(r.get("PostingEndDate"), today)), "rolling": False})
+    return items
+
+
 # --------------------------------------------------------------------------- sitemap of vacancies (AcademicTransfer)
 def parse_sitemap(xml: str, base: str, today: dt.date, slug_include: str | None = None, id_regex: str = r"/jobs/(\d+)/") -> list[dict]:
     """One item per vacancy id (English page preferred).  The title is rebuilt from the URL slug, which is
@@ -331,6 +353,8 @@ def parse_page(src: dict, html: str, today: dt.date) -> list[dict]:
         return parse_generic(html, base, today, src.get("link_regex", r"."), src.get("country"))
     if t == "rss":
         return parse_rss(html, base, today, src.get("country"))
+    if t == "oraclehcm":
+        return parse_oraclehcm(html, base, today, src.get("job_url", ""), src.get("org"))
     if t == "university":
         return parse_university(html, base, today, src.get("link_regex"), src.get("org"), src.get("country"))
     if t == "sitemap":

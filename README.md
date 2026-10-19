@@ -33,6 +33,8 @@ EURAXESS · INOMICS (PhD، RA، researcher) · jobs.ac.uk · **AcademicTransfer*
 
 **صفحه‌ی موقعیت‌های شغلی ۱۸ دانشگاه** (`type: university`): ETH، Zurich، Basel، Stockholm، Uppsala، Lund، Gothenburg، KTH، Aalto، Helsinki، Copenhagen، Aalborg، CBS، Luxembourg، Oslo، Cambridge (studentships)، Manchester، Glasgow. هر صفحه با یک مرورگر headless (Playwright/Chromium) خوانده می‌شود؛ فقط صفحه‌ی اول فهرست.
 
+**اسکاتلند و ایرلند:** Edinburgh (از JSON عمومی خود سایت کاریابی‌اش)، و صفحه‌های «Scotland» و «Ireland» در jobs.ac.uk که دانشگاه‌های آن دو کشور را پوشش می‌دهند.
+
 **Academic Positions غیرفعال است**: سرورهای GitHub را با خطای 403 رد می‌کند و من دور زدن محافظ آن را انجام نمی‌دهم.
 منبع جدید: یک بلوک به `config/sources.yaml` اضافه کن (نمونه‌ها داخل فایل).
 
