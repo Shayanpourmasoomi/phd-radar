@@ -13,6 +13,21 @@ max_detail_minutes: 40        # hard time cap for the detail-page phase of one r
 lookback_days: 21             # daily mode: stop paging a newest-first source after this
 keep_days: 75                 # drop postings not seen on any source for this long
 drop_past_deadlines: true     # hide postings whose deadline already passed
+max_age_without_deadline_days: 120   # no deadline known and posted longer ago than this -> treated as stale
+recheck_undated_days: 7       # re-read the full page of a kept posting with no known deadline this often
+                              # (catches "expired" / "no longer accepting applications" after it closes)
+# Text on a posting page that means it is closed (regular expressions, case-insensitive)
+closed_markers:
+  - 'no longer accepting applications'
+  - 'not accepting applications'
+  - 'applications? (?:are|is|have) (?:now )?closed'
+  - 'applications? (?:are|is) no longer (?:being )?accepted'
+  - '(?:job|position|vacancy|advert|advertisement|listing|posting|opportunity) (?:has )?(?:now )?(?:expired|closed)'
+  - '(?:position|vacancy|post|role) has (?:now )?been filled'
+  - 'closing date has (?:now )?passed'
+  - 'deadline\W{0,12}expired'
+  - 'this vacancy is closed'
+  - 'reviewing applications \(no longer'
 
 # ---- thresholds (see profiles.yaml header) ---------------------------------
 strong_min: 6
@@ -76,6 +91,7 @@ position_types:
       - "asistente de investigacion"
       - "research professional"      # US predoc.org wording
       - "research specialist"
+      - "research officer"           # UK wording for RA-type posts ("Research Delivery Officer" stays out)
       - "research fellow (pre"
   - name: "Doctoral researcher"
     needs_body_evidence: true        # generic job titles: the text must say PhD/doctoral too
@@ -117,6 +133,27 @@ exclude_in_title:
   - "master programme"
   - "msc programme"
   - "mba"
+  # administrative / professional-services jobs (kept only if the title ALSO says PhD / RA / predoc)
+  - "manager"
+  - "officer"
+  - "administrator"
+  - "administrative"
+  - "coordinator"
+  - "co-ordinator"
+  - "advisor"
+  - "adviser"
+  - "executive"
+  - "secretary"
+  - "clerk"
+  - "receptionist"
+  - "librarian"
+  - "recruiter"
+  - "accountant"
+  - "developer"
+  - "engineer"
+  - "maternity cover"
+  - "teaching fellow"
+  - "teaching associate"
 # These kill a posting even when the title also says "PhD" (events / programmes, not jobs).
 # Postdoc / professor words do NOT: "PhD position (supervisor: Prof. X)" and "PhD or postdoc" must survive.
 hard_exclude_in_title:

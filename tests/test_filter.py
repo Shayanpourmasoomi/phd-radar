@@ -152,5 +152,46 @@ class EasyConfig(unittest.TestCase):
         self.assertEqual(evaluate({"title": "PhD in labour economics", "org": "Blocked Uni", "location": "Paris, France", "source_opts": {}}, cfg, TODAY)["tier"], "rejected")
 
 
+class ClosedAndAdmin(unittest.TestCase):
+    """Fixes from 20 Oct 2026: expired postings and admin jobs were showing as Strong."""
+
+    def test_admin_jobs_rejected(self):
+        for t in ["Alumni Relations Manager (12 month contract, maternity cover)", "Research Delivery Officer"]:
+            d = ev(t, org="London School of Economics and Political Science", location="London",
+                   body="Join LSE. Our PhD Academy supports doctoral students. Labour market skills occupational jobs.",
+                   tags="PhD")
+            self.assertEqual(d["tier"], "rejected", t)
+
+    def test_phd_with_admin_word_kept(self):
+        d = ev("PhD position in urban economics and transport (project manager: Prof. X)", org="University of Amsterdam",
+               location="Amsterdam, Netherlands", body="PhD in urban economics, commuting and public transport.")
+        self.assertNotEqual(d["tier"], "rejected", d["reason"])
+
+    def test_research_officer_is_ra(self):
+        d = ev("Research Officer in Urban Economics", org="London School of Economics", location="London",
+               body="Research officer supporting the urban economics programme.")
+        self.assertEqual(d["ptype"], "Research assistant", d["reason"])
+
+    def test_closed_markers(self):
+        for txt in ["Reviewing applications (no longer accepting applications)",
+                    "This vacancy is no longer accepting applications",
+                    "Deadline: Expired", "The position has been filled."]:
+            d = ev("Pre-doctoral fellow in urban economics", org="CEMFI", location="Madrid, Spain", body=txt)
+            self.assertEqual(d["tier"], "rejected", txt)
+            self.assertIn("closed", d["reason"])
+
+    def test_open_posting_not_flagged(self):
+        d = ev("PhD position in urban economics", org="Utrecht University", location="Utrecht, Netherlands",
+               body="Applications close on 30 November 2026. Urban economics, housing, commuting.")
+        self.assertNotEqual(d["tier"], "rejected", d["reason"])
+
+    def test_stale_without_deadline(self):
+        it = {"title": "PhD in Economics", "org": "Sant'Anna", "location": "Pisa, Italy", "body": "economic history PhD",
+              "posted": "2025-02-25", "deadline": None, "source_opts": {}}
+        self.assertTrue(evaluate(it, CFG, TODAY)["reason"].startswith("stale"))
+        it["deadline"] = "2026-12-01"
+        self.assertFalse(evaluate(it, CFG, TODAY)["reason"].startswith("stale"))
+
+
 if __name__ == "__main__":
     unittest.main()

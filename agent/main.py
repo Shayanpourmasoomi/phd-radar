@@ -94,18 +94,23 @@ def cmd_run(cfg: Config, today: dt.date, deep: bool) -> int:
     budget = cfg.settings["max_detail_fetches"]
     t_end = time.time() + 60 * cfg.settings.get("max_detail_minutes", 40)
     fetched = 0
+    recheck_before = (today - dt.timedelta(days=cfg.settings.get("recheck_undated_days", 7))).isoformat()
     for it in dbm.all_items(con, (today - dt.timedelta(days=cfg.settings["keep_days"])).isoformat()):
         if fetched >= budget or time.time() > t_end:
             break
         d = evaluate(it, cfg, today)
-        if needs_detail(it, cfg, d):
-            so = it.get("source_opts") or {}
+        so = it.get("source_opts") or {}
+        # a listed posting with no known deadline: re-read its page now and then to notice when it closes
+        recheck = (bool(it.get("body")) and not it.get("deadline") and d["tier"] != "rejected"
+                   and so.get("detail") is not False and (it.get("body_checked") or "") < recheck_before)
+        if needs_detail(it, cfg, d) or recheck:
             html, err = http.get(it["url"], delay=so.get("delay_sec"), render=so.get("render"))
             fetched += 1
             if html is None:
                 continue
             info = fetch_detail(html, today)
-            dbm.set_body(con, it["url"], info["body"], info["deadline"], info["rolling"], info["location"], info["org"])
+            dbm.set_body(con, it["url"], info["body"], info["deadline"], info["rolling"], info["location"], info["org"],
+                         checked=today.isoformat())
     con.commit()
     http.close()
     print(f"detail pages fetched: {fetched}")
