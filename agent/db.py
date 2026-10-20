@@ -47,9 +47,9 @@ def upsert(con: sqlite3.Connection, it: dict, today: str) -> bool:
         return True
     con.execute("UPDATE items SET last_seen=?, title=COALESCE(?,title), org=COALESCE(?,org), location=COALESCE(?,location),"
                 " snippet=COALESCE(?,snippet), fields=COALESCE(?,fields), deadline=COALESCE(?,deadline), posted=COALESCE(?,posted),"
-                " rolling=MAX(rolling,?) WHERE url=?",
+                " rolling=MAX(rolling,?), source_opts=? WHERE url=?",
                 (today, it.get("title"), it.get("org"), it.get("location"), it.get("snippet"), it.get("fields"),
-                 it.get("deadline"), it.get("posted"), int(bool(it.get("rolling"))), it["url"]))
+                 it.get("deadline"), it.get("posted"), int(bool(it.get("rolling"))), opts, it["url"]))
     return False
 
 

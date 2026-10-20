@@ -363,7 +363,7 @@ def parse_page(src: dict, html: str, today: dt.date) -> list[dict]:
 
 
 def source_opts(src: dict) -> dict:
-    return {k: src[k] for k in ("econ_specific", "default_country", "assume_type", "detail", "delay_sec", "render") if k in src}
+    return {k: src[k] for k in ("econ_specific", "default_country", "assume_type", "detail", "recheck", "delay_sec", "render") if k in src}
 
 
 def fetch_source(src: dict, http, cfg, today: dt.date, deep: bool = False, first_page_only: bool = False):

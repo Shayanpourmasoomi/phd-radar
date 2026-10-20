@@ -244,6 +244,7 @@ sources:
     default_country: "United States"
     assume_type: "Predoc/RA"
     detail: false
+    recheck: true             # still open the link weekly when no deadline is listed: PREDOC.org keeps closed posts as "rolling"
     note: "Links go through bit.ly redirects; the listing already carries fields and deadline."
 
 
