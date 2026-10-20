@@ -101,8 +101,9 @@ def cmd_run(cfg: Config, today: dt.date, deep: bool) -> int:
         d = evaluate(it, cfg, today)
         so = it.get("source_opts") or {}
         # a listed posting with no known deadline: re-read its page now and then to notice when it closes
-        recheck = (bool(it.get("body")) and not it.get("deadline") and d["tier"] != "rejected"
-                   and so.get("detail") is not False and (it.get("body_checked") or "") < recheck_before)
+        # ("recheck: true" sources such as PREDOC.org list no page text, but their link still shows when a post closed)
+        recheck = (not it.get("deadline") and d["tier"] != "rejected" and (it.get("body_checked") or "") < recheck_before
+                   and ((bool(it.get("body")) and so.get("detail") is not False) or bool(so.get("recheck"))))
         if needs_detail(it, cfg, d) or recheck:
             html, err = http.get(it["url"], delay=so.get("delay_sec"), render=so.get("render"))
             fetched += 1
