@@ -94,6 +94,7 @@ def cmd_run(cfg: Config, today: dt.date, deep: bool) -> int:
     budget = cfg.settings["max_detail_fetches"]
     t_end = time.time() + 60 * cfg.settings.get("max_detail_minutes", 40)
     fetched = 0
+    rechecks: list[list] = []          # audit of re-read pages -> output/rechecks.csv
     recheck_before = (today - dt.timedelta(days=cfg.settings.get("recheck_undated_days", 7))).isoformat()
     for it in dbm.all_items(con, (today - dt.timedelta(days=cfg.settings["keep_days"])).isoformat()):
         if fetched >= budget or time.time() > t_end:
@@ -108,16 +109,31 @@ def cmd_run(cfg: Config, today: dt.date, deep: bool) -> int:
             html, err = http.get(it["url"], delay=so.get("delay_sec"), render=so.get("render"))
             fetched += 1
             if html is None:
+                if recheck:
+                    rechecks.append([it["url"], it.get("title"), "fetch failed", err or "", ""])
                 continue
             info = fetch_detail(html, today)
             dbm.set_body(con, it["url"], info["body"], info["deadline"], info["rolling"], info["location"], info["org"],
                          checked=today.isoformat())
+            if recheck:
+                after = evaluate({**it, "body": info["body"], "deadline": info["deadline"] or it.get("deadline")}, cfg, today)
+                rechecks.append([it["url"], it.get("title"), "read", after["reason"], (info["body"] or "")[:200]])
     con.commit()
     http.close()
     print(f"detail pages fetched: {fetched}")
 
     kept, rejected = evaluate_all(con, cfg, today)
     path = render(kept, health, rejected, cfg.settings["site_title"], today, repo=cfg.easy.get("github_repo"))
+    for row in kept:                   # still-listed postings from recheck sources: what their page said
+        if (row.get("source_opts") or {}).get("recheck"):
+            rechecks.append([row["url"], row.get("title"), "state", f"checked {row.get('body_checked') or 'never'}",
+                             (row.get("body") or "")[:200]])
+    import csv
+    with open(Path(path).parent / "rechecks.csv", "w", newline="", encoding="utf-8") as f:
+        w = csv.writer(f)
+        w.writerow(["url", "title", "step", "result", "page_start"])
+        w.writerows(rechecks)
+    print(f"re-read {len(rechecks)} undated postings")
     summary = {"new_postings_listed": n_new, "strong": sum(d["tier"] == "strong" for d in kept),
                "adjacent": sum(d["tier"] == "adjacent" for d in kept), "rejected": len(rejected)}
     con.execute("UPDATE runs SET finished=?, summary=? WHERE id=?", (dt.datetime.now().isoformat(timespec="seconds"), json.dumps(summary), run_id))
