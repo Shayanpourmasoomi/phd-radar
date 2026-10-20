@@ -27,6 +27,9 @@ def connect(path: Path | str | None = None) -> sqlite3.Connection:
     con = sqlite3.connect(p)
     con.row_factory = sqlite3.Row
     con.executescript(SCHEMA)
+    cols = {r[1] for r in con.execute("PRAGMA table_info(items)")}
+    if "body_checked" not in cols:            # added later: when the full page was last read
+        con.execute("ALTER TABLE items ADD COLUMN body_checked TEXT")
     return con
 
 
@@ -50,10 +53,11 @@ def upsert(con: sqlite3.Connection, it: dict, today: str) -> bool:
     return False
 
 
-def set_body(con, url: str, body: str, deadline: str | None, rolling: bool, location: str | None = None, org: str | None = None):
+def set_body(con, url: str, body: str, deadline: str | None, rolling: bool, location: str | None = None, org: str | None = None,
+             checked: str | None = None):
     con.execute("UPDATE items SET body=?, deadline=COALESCE(?,deadline), rolling=MAX(rolling,?), "
-                "location=COALESCE(location,?), org=COALESCE(org,?) WHERE url=?",
-                (body, deadline, int(rolling), location, org, url))
+                "location=COALESCE(location,?), org=COALESCE(org,?), body_checked=COALESCE(?,body_checked) WHERE url=?",
+                (body, deadline, int(rolling), location, org, checked, url))
 
 
 def all_items(con, keep_since: str | None = None) -> list[dict]:

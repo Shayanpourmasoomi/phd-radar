@@ -217,6 +217,29 @@ def negative_score(title: str, rest: str, cfg: Config) -> tuple[int, list[str]]:
     return sc, hits
 
 
+# --------------------------------------------------------------------------- closed / stale
+def is_closed(item: dict, cfg: Config, today: dt.date) -> str | None:
+    """Reason string when the posting is evidently closed or stale, else None."""
+    s = cfg.settings
+    if getattr(cfg, "_closed_rx", None) is None:
+        cfg._closed_rx = [re.compile(p, re.I) for p in s.get("closed_markers", [])]
+    text = " ".join(filter(None, [item.get("snippet"), item.get("body")]))
+    for rx in cfg._closed_rx:
+        m = rx.search(text)
+        if m:
+            return f"posting closed ('{m.group(0)[:40]}')"
+    max_age = s.get("max_age_without_deadline_days")
+    posted = item.get("posted")
+    if max_age and posted and not item.get("deadline"):
+        try:
+            age = (today - dt.date.fromisoformat(posted[:10])).days
+        except ValueError:
+            age = 0
+        if age > max_age:
+            return f"stale: posted {posted[:10]}, no deadline given"
+    return None
+
+
 # --------------------------------------------------------------------------- main entry
 def evaluate(item: dict, cfg: Config, today: dt.date | None = None) -> dict:
     """item keys: title, org, location, snippet, fields, body, deadline(iso|None), rolling,
@@ -235,6 +258,11 @@ def evaluate(item: dict, cfg: Config, today: dt.date | None = None) -> dict:
 
     if any(o in norm(item.get("org") or "") for o in cfg.blocked_orgs):
         d["reason"] = "blocked organisation (config/easy.yaml)"
+        return d
+
+    closed = is_closed(item, cfg, today)
+    if closed:
+        d["reason"] = closed
         return d
 
     # 1) position type
