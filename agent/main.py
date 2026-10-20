@@ -108,6 +108,10 @@ def cmd_run(cfg: Config, today: dt.date, deep: bool) -> int:
         if needs_detail(it, cfg, d) or recheck:
             html, err = http.get(it["url"], delay=so.get("delay_sec"), render=so.get("render"))
             fetched += 1
+            if html is None and recheck and so.get("recheck") and not so.get("render"):
+                # short links (bit.ly) refuse plain HTTP clients: open them in the headless browser instead
+                html, err2 = http.get(it["url"], delay=so.get("delay_sec"), render={"wait_ms": 2500})
+                err = err if html is None and not err2 else (err2 or err)
             if html is None:
                 if recheck:
                     rechecks.append([it["url"], it.get("title"), "fetch failed", err or "", ""])
