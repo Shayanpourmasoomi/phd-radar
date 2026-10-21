@@ -44,6 +44,7 @@ button,select,input{font:inherit;color:var(--ink)}
 .why{font-size:12.5px;color:var(--mute);margin-top:7px}
 .acts{display:flex;gap:8px;margin-top:11px}.acts button{flex:1;min-height:44px;border:1px solid var(--line);background:transparent;border-radius:10px;cursor:pointer;font-size:14.5px}
 .acts button.on{background:var(--chip);border-color:var(--mute);font-weight:600}.acts .open{flex:1.3;text-align:center;display:flex;align-items:center;justify-content:center;border:1px solid var(--acc);color:var(--acc);border-radius:10px;text-decoration:none;font-size:14.5px;min-height:44px}
+.status{margin:12px 0 0;padding:10px 14px;border-radius:10px;background:var(--chip);font-size:14px;display:flex;flex-wrap:wrap;gap:8px;align-items:center}.status b{font-weight:600}.status button{min-height:36px;padding:0 14px;border:1px solid var(--acc);color:var(--acc);background:transparent;border-radius:999px;cursor:pointer}
 .empty{text-align:center;color:var(--mute);padding:40px 10px}
 details{margin:22px 0}summary{cursor:pointer;color:var(--mute);min-height:44px;display:flex;align-items:center}
 table{border-collapse:collapse;width:100%;font-size:13px}td,th{padding:6px 8px;border-bottom:1px solid var(--line);text-align:left}
@@ -66,7 +67,7 @@ table{border-collapse:collapse;width:100%;font-size:13px}td,th{padding:6px 8px;b
   </div>
   <input id="q" type="search" placeholder="Search title, topic, country…">
  </div></div></div>
-<div class="wrap"><main><div id="list"></div>
+<div class="wrap"><main><div id="status" class="status"></div><div id="list"></div>
 <div class="tools"><button id="copy">Copy saved list</button><button id="backup">Backup my marks</button><button id="restore">Restore marks</button>__RUNLINK__</div>
 <details><summary>Source health (last run)</summary><table id="health"></table></details>
 <p class="sub">Your ⭐ / applied / hidden marks live in this browser only. Use Backup → Restore to move them between iPad and phone.</p></main></div>
@@ -76,7 +77,7 @@ const $=s=>document.querySelector(s), esc=s=>(s||'').replace(/[&<>"]/g,c=>({'&':
 let marks={}; try{marks=JSON.parse(localStorage.getItem('radar-marks')||'{}')}catch(e){}
 const save=()=>{try{localStorage.setItem('radar-marks',JSON.stringify(marks))}catch(e){}};
 const st={tab:'review',who:'all',tier:'strong',type:'',region:'',newonly:false,q:'',sort:'rank'};
-try{Object.assign(st,JSON.parse(localStorage.getItem('radar-filters')||'{}'),{tab:'review',q:''})}catch(e){}
+try{Object.assign(st,JSON.parse(localStorage.getItem('radar-filters')||'{}'),{tab:'review',q:'',newonly:false})}catch(e){}
 const TABS=[['review','To review'],['saved','⭐ Saved'],['applied','✓ Applied'],['hidden','Hidden']];
 [...new Set(DATA.map(d=>d.ptype))].sort().forEach(t=>{const o=document.createElement('option');o.value=t;o.textContent=t;$('#type').append(o)});
 const daysLeft=d=>d?Math.round((new Date(d)-new Date(new Date().toDateString()))/864e5):null;
@@ -94,6 +95,11 @@ function render(){
     deadline:(a,b)=>(a.deadline||'9999').localeCompare(b.deadline||'9999'),
     new:(a,b)=>(b.first_seen||'').localeCompare(a.first_seen||'')||b.score-a.score}[st.sort];
   const rows=DATA.filter(d=>visible(d)&&inTab(d)).sort(key);
+  const active=[st.who!=='all'?(st.who==='shayan'?'Shayan':'Zahra'):'',st.tier==='strong'?'Strong only':'',st.type?st.type:'',
+    st.region?'Western Europe':'',st.newonly?'New only':'',st.q?('“'+st.q+'”'):''].filter(Boolean);
+  const total=DATA.filter(inTab).length;
+  $('#status').innerHTML=`Showing <b>${rows.length}</b> of ${total}`+(active.length?` · filters: ${esc(active.join(', '))} <button id="reset">Show all</button>`:'');
+  const rb=$('#reset'); if(rb) rb.onclick=()=>{Object.assign(st,{who:'all',tier:'all',type:'',region:'',newonly:false,q:''});$('#q').value='';$('#type').value='';$('#region').value='';render()};
   $('#list').innerHTML=rows.length?rows.map(d=>{
     const dl=daysLeft(d.deadline), soon=dl!==null&&dl>=0&&dl<=14, m=markOf(d);
     const who=d.who.map(w=>`<span class="chip ${w==='shayan'?'s':'z'}">${w==='shayan'?'Shayan':'Zahra'}</span>`).join('');
@@ -111,7 +117,7 @@ function render(){
   document.querySelectorAll('#who button').forEach(b=>b.classList.toggle('on',b.dataset.v===st.who));
   document.querySelectorAll('#tier button').forEach(b=>b.classList.toggle('on',b.dataset.v===st.tier));
   $('#newonly').classList.toggle('on',st.newonly);
-  try{localStorage.setItem('radar-filters',JSON.stringify({who:st.who,tier:st.tier,type:st.type,region:st.region,sort:st.sort,newonly:st.newonly}))}catch(e){}
+  try{localStorage.setItem('radar-filters',JSON.stringify({who:st.who,tier:st.tier,type:st.type,region:st.region,sort:st.sort}))}catch(e){}
 }
 $('#tabs').onclick=e=>{const b=e.target.closest('[data-t]');if(b){st.tab=b.dataset.t;render()}};
 $('#who').onclick=e=>{const b=e.target.closest('[data-v]');if(b){st.who=b.dataset.v;render()}};
@@ -128,6 +134,7 @@ $('#copy').onclick=async()=>{const t=DATA.filter(d=>markOf(d)==='saved').map(d=>
 $('#backup').onclick=async()=>{const t=btoa(unescape(encodeURIComponent(JSON.stringify(marks))));try{await navigator.clipboard.writeText(t);$('#backup').textContent='Backup copied ✓'}catch(e){prompt('Copy this code:',t)}};
 $('#restore').onclick=()=>{const t=prompt('Paste backup code:');if(!t)return;try{Object.assign(marks,JSON.parse(decodeURIComponent(escape(atob(t.trim())))));save();render()}catch(e){alert('That code was not valid.')}};
 $('#health').innerHTML='<tr><th>Source</th><th>Status</th><th>Read</th><th>Note</th></tr>'+HEALTH.map(h=>`<tr><td>${esc(h.source)}${h.verified?'':' <span class="sub">(unverified)</span>'}</td><td class="${h.ok?'good':'bad'}">${h.ok?'OK':'PROBLEM'}</td><td>${h.n_items}</td><td>${esc(h.error||'')}</td></tr>`).join('');
+if(st.type||st.region){$('#more').classList.add('open');$('#moreBtn').textContent='Filters ▴'}
 render();
 </script></body></html>
 """
