@@ -22,9 +22,6 @@ jobs:
   run:
     runs-on: ubuntu-latest
     timeout-minutes: 120
-    environment:
-      name: github-pages
-      url: "${{ steps.deploy.outputs.page_url }}"
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -51,5 +48,17 @@ jobs:
           GH_TOKEN: "${{ github.token }}"
       - uses: actions/upload-pages-artifact@v3
         with: {path: output}
+  # Deploy runs as its own job. When it ran in the same job right after the upload,
+  # GitHub sometimes had not registered the artifact yet ("No artifacts named github-pages"),
+  # so the run failed and had to be re-run by hand. A separate job starts only after
+  # the artifact is fully registered.
+  deploy:
+    needs: run
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment:
+      name: github-pages
+      url: "${{ steps.deploy.outputs.page_url }}"
+    steps:
       - id: deploy
         uses: actions/deploy-pages@v4
